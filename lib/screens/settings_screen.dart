@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../config/app_theme.dart';
 import '../providers/metal_prices_provider.dart';
 import '../providers/settings_provider.dart';
@@ -63,6 +64,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSectionHeader(context, 'API Configuration'),
               const SizedBox(height: 12),
               _buildApiKeySection(settings),
+              const SizedBox(height: 24),
+
+              // Data Management Section
+              _buildSectionHeader(context, 'Data Management'),
+              const SizedBox(height: 12),
+              _buildDataManagementSection(settings),
               const SizedBox(height: 24),
 
               // About Section
@@ -238,6 +245,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildDataManagementSection(SettingsProvider settings) {
+    return Card(
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.delete_forever,
+              color: AppTheme.errorRed.withValues(alpha: 0.8),
+            ),
+            title: const Text('Delete All Data'),
+            subtitle: const Text('Clear all cached prices and settings'),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: AppTheme.textSecondary,
+            ),
+            onTap: () => _showDeleteConfirmation(settings),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmation(SettingsProvider settings) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        title: const Text('Delete All Data?'),
+        content: const Text(
+          'This will clear all cached prices, settings, and your custom API key. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.errorRed,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await settings.resetSettings();
+      _apiKeyController.clear();
+
+      final pricesProvider = context.read<MetalPricesProvider>();
+      pricesProvider.clearCache();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All data deleted'),
+          backgroundColor: AppTheme.successGreen,
+        ),
+      );
+    }
+  }
+
   Widget _buildAboutSection() {
     return Card(
       child: Column(
@@ -273,16 +343,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.api, color: AppTheme.textSecondary),
             title: const Text('Powered by'),
-            subtitle: const Text('MetalpriceAPI'),
+            subtitle: const Text('FreeGoldPrice API'),
             trailing: const Icon(Icons.open_in_new,
                 size: 16, color: AppTheme.textSecondary),
-            onTap: () {
-              // Could open URL
-            },
+            onTap: () => _launchUrl('https://freegoldprice.org'),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined,
+                color: AppTheme.textSecondary),
+            title: const Text('Privacy Policy'),
+            trailing: const Icon(Icons.open_in_new,
+                size: 16, color: AppTheme.textSecondary),
+            onTap: () => _launchUrl(
+                'https://metalmetric.nexodev.site/privacy-policy.html'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.description_outlined,
+                color: AppTheme.textSecondary),
+            title: const Text('Terms of Service'),
+            trailing: const Icon(Icons.open_in_new,
+                size: 16, color: AppTheme.textSecondary),
+            onTap: () => _launchUrl(
+                'https://metalmetric.nexodev.site/terms-of-service.html'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   String _getCurrencyName(String code) {

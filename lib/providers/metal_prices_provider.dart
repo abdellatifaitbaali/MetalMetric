@@ -111,6 +111,15 @@ class MetalPricesProvider extends ChangeNotifier {
     return _priceChanges[metal];
   }
 
+  /// Clear all cached data
+  void clearCache() {
+    _pricesResponse = null;
+    _priceChanges = {};
+    _lastUpdated = null;
+    _error = null;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _service?.dispose();
