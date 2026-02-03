@@ -194,7 +194,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         final pricesProvider =
                             context.read<MetalPricesProvider>();
                         pricesProvider.initialize(
-                            apiKey.isEmpty ? ApiConfig.defaultApiKey : apiKey);
+                            apiKey.isEmpty ? ApiConfig.fallbackApiKey : apiKey);
                         await pricesProvider.fetchPrices(
                           currency: settings.selectedCurrency,
                           forceRefresh: true,

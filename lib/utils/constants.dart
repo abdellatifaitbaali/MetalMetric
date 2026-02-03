@@ -79,7 +79,11 @@ class ApiConfig {
   /// Action code for all metals (Gold, Silver, Platinum, Palladium) in JSON
   static const String action = 'GSPPJ';
 
-  /// Default API key - user should replace with their own key
-  static const String defaultApiKey =
+  /// Remote URL to fetch the latest API key (raw GitHub file)
+  static const String remoteApiKeyUrl =
+      'https://raw.githubusercontent.com/abdellatifaitbaali/MetalMetric/main/api_key.txt';
+
+  /// Fallback API key if remote fetch fails
+  static const String fallbackApiKey =
       'N4AwbZJ3w3RTPKL4fnH92vOAbw4uH0SnE8cp9aWIgqZ6qOaglOmb4RUpMVjk';
 }
