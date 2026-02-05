@@ -356,7 +356,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.open_in_new,
                 size: 16, color: AppTheme.textSecondary),
             onTap: () => _launchUrl(
-                'https://metalmetric.nexodev.site/privacy-policy.html'),
+                'https://metalmetric.ckstudiogmbh.online/privacy-policy.html'),
           ),
           ListTile(
             leading: const Icon(Icons.description_outlined,
@@ -365,7 +365,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.open_in_new,
                 size: 16, color: AppTheme.textSecondary),
             onTap: () => _launchUrl(
-                'https://metalmetric.nexodev.site/terms-of-service.html'),
+                'https://metalmetric.ckstudiogmbh.online/terms-of-service.html'),
           ),
         ],
       ),
@@ -374,8 +374,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not open $url'),
+              backgroundColor: AppTheme.errorRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening link: $e'),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
     }
   }
 
